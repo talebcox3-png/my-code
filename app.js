@@ -1,18 +1,18 @@
 (function () {
+    // 1. Clean up existing elements if script re-executed
     let oldBtn = document.getElementById('qx999-circle-bot');
     let oldPanel = document.getElementById('qx999-panel');
     let oldLogin = document.getElementById('qx999-login');
-    let oldStatus = document.getElementById('qx999-status');
     let oldCanvas = document.getElementById('qx999-scan-canvas');
     if (oldBtn) oldBtn.remove();
     if (oldPanel) oldPanel.remove();
     if (oldLogin) oldLogin.remove();
-    if (oldStatus) oldStatus.remove();
     if (oldCanvas) oldCanvas.remove();
 
     let isRunning = false;
     let licenseKey = "Alvi1234";
 
+    // 2. Login Overlay
     let loginBox = document.createElement('div');
     loginBox.id = 'qx999-login';
     loginBox.style.cssText = `
@@ -23,13 +23,14 @@
         font-family: Arial, sans-serif; text-align: center;
     `;
     loginBox.innerHTML = `
-        <h3 style="margin:0 0 5px 0; color:#00ff66; font-size:22px;">QX999 Login</h3>
-        <p style="font-size:12px; color:#aaa; margin-bottom:20px;">Enter password to continue</p>
+        <h3 style="margin:0 0 5px 0; color:#00ff66; font-size:22px;">QX999 VIP BOT</h3>
+        <p style="font-size:12px; color:#aaa; margin-bottom:20px;">@tradewithevu Edition</p>
         <input type="password" id="qx_pass" value="${licenseKey}" readonly style="width:100%; padding:12px; background:#112e1f; color:#fff; border:1px solid #00ff66; border-radius:8px; box-sizing:border-box; margin-bottom:20px; text-align:center; font-size:16px; outline:none; cursor:not-allowed;">
-        <button id="qx_login_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Enter</button>
+        <button id="qx_login_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">CONNECT BOT</button>
     `;
     document.body.appendChild(loginBox);
 
+    // 3. Floating Circle Icon
     let botContainer = document.createElement('div');
     botContainer.id = 'qx999-circle-bot';
     botContainer.style.cssText = `
@@ -43,6 +44,7 @@
     `;
     document.body.appendChild(botContainer);
 
+    // 4. Radar Scan Canvas Overlay
     let scanCanvas = document.createElement('canvas');
     scanCanvas.id = 'qx999-scan-canvas';
     scanCanvas.style.cssText = `
@@ -95,6 +97,7 @@
         }
     }
 
+    // 5. Control Panel UI
     let panel = document.createElement('div');
     panel.id = 'qx999-panel';
     panel.style.cssText = `
@@ -126,6 +129,7 @@
     `;
     document.body.appendChild(panel);
 
+    // Direction Select Handler
     let selectedDirection = "Up";
     let dirButtons = panel.querySelectorAll('.dir-btn');
     dirButtons.forEach(btn => {
@@ -142,6 +146,7 @@
     dirButtons[0].style.background = "#00ff66";
     dirButtons[0].style.color = "#000";
 
+    // Event Listeners
     document.getElementById('qx_login_btn').onclick = function () {
         loginBox.remove();
         botContainer.style.display = 'flex';
@@ -152,6 +157,7 @@
         panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
     };
 
+    // Trade Click Action
     document.getElementById('save_bot_btn').onclick = function () {
         let scanDelay = parseInt(document.getElementById('scan_delay').value) * 1000;
         let tradeAmount = document.getElementById('trade_amount').value;
@@ -198,6 +204,7 @@
         }
     };
 
+    // Touch Dragging Support
     botContainer.ontouchmove = function (e) {
         let touch = e.touches[0];
         botContainer.style.left = (touch.clientX - 30) + 'px';
