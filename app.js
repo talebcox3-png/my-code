@@ -175,7 +175,12 @@
 
                 let amountInput = document.querySelector('input[name="amount"]') || document.querySelector('.input-amount input') || document.querySelector('input[type="text"][value*="$"]');
                 if (amountInput) {
-                    amountInput.value = tradeAmount;
+                    let nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                    if (nativeSetter) {
+                        nativeSetter.call(amountInput, tradeAmount);
+                    } else {
+                        amountInput.value = tradeAmount;
+                    }
                     amountInput.dispatchEvent(new Event('input', { bubbles: true }));
                     amountInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
