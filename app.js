@@ -3,13 +3,14 @@
     let oldPanel = document.getElementById('qx999-panel');
     let oldLogin = document.getElementById('qx999-login');
     let oldStatus = document.getElementById('qx999-status');
+    let oldCanvas = document.getElementById('qx999-scan-canvas');
     if (oldBtn) oldBtn.remove();
     if (oldPanel) oldPanel.remove();
     if (oldLogin) oldLogin.remove();
     if (oldStatus) oldStatus.remove();
+    if (oldCanvas) oldCanvas.remove();
 
     let isRunning = false;
-    let tradeInterval = null;
     let licenseKey = "Alvi1234";
 
     let loginBox = document.createElement('div');
@@ -29,15 +30,70 @@
     `;
     document.body.appendChild(loginBox);
 
-    let circleBtn = document.createElement('div');
-    circleBtn.id = 'qx999-circle-bot';
-    circleBtn.style.cssText = `
-        position: fixed; top: 100px; right: 20px; width: 60px; height: 60px;
-        background: url('https://i.ibb.co.com/jvVK3jbt/1000321459-2.jpg') center/cover no-repeat;
-        border: 2px solid #00ff66; border-radius: 50%; display: none;
-        box-shadow: 0 0 10px rgba(0,255,102,0.6); z-index: 999999; cursor: pointer; user-select: none;
+    let botContainer = document.createElement('div');
+    botContainer.id = 'qx999-circle-bot';
+    botContainer.style.cssText = `
+        position: fixed; top: 100px; right: 20px;
+        display: none; flex-direction: column; align-items: center;
+        z-index: 999999; cursor: pointer; user-select: none;
     `;
-    document.body.appendChild(circleBtn);
+    botContainer.innerHTML = `
+        <div style="width: 60px; height: 60px; background: url('https://i.ibb.co.com/jvVK3jbt/1000321459-2.jpg') center/cover no-repeat; border: 2px solid #00ff66; border-radius: 50%; box-shadow: 0 0 12px rgba(0,255,102,0.6);"></div>
+        <span style="color: #00ff66; font-weight: bold; font-size: 13px; margin-top: 5px; text-shadow: 0 0 5px #000; font-family: Arial, sans-serif;">QX HECK</span>
+    `;
+    document.body.appendChild(botContainer);
+
+    let scanCanvas = document.createElement('canvas');
+    scanCanvas.id = 'qx999-scan-canvas';
+    scanCanvas.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none; z-index: 999998; display: none;
+    `;
+    document.body.appendChild(scanCanvas);
+    let ctx = scanCanvas.getContext('2d');
+
+    function resizeCanvas() {
+        scanCanvas.width = window.innerWidth;
+        scanCanvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    let scanAnimationId = null;
+    let scanY = 0;
+    let scanDirection = 1;
+
+    function drawScanLine() {
+        ctx.clearRect(0, 0, scanCanvas.width, scanCanvas.height);
+        ctx.beginPath();
+        ctx.strokeStyle = '#00ff66';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#00ff66';
+        ctx.shadowBlur = 15;
+        ctx.moveTo(0, scanY);
+        ctx.lineTo(scanCanvas.width, scanY);
+        ctx.stroke();
+
+        scanY += 4 * scanDirection;
+        if (scanY >= scanCanvas.height || scanY <= 0) {
+            scanDirection *= -1;
+        }
+        scanAnimationId = requestAnimationFrame(drawScanLine);
+    }
+
+    function startScanAnimation() {
+        scanCanvas.style.display = 'block';
+        scanY = 0;
+        if (!scanAnimationId) drawScanLine();
+    }
+
+    function stopScanAnimation() {
+        scanCanvas.style.display = 'none';
+        if (scanAnimationId) {
+            cancelAnimationFrame(scanAnimationId);
+            scanAnimationId = null;
+        }
+    }
 
     let panel = document.createElement('div');
     panel.id = 'qx999-panel';
@@ -58,12 +114,15 @@
         <span style="font-size:10px; color:#888; display:block; margin-bottom:5px;">0 = stop only when you tap the icon</span>
         <input type="number" id="after_scan" value="5" style="width:100%; margin:0 0 15px 0; padding:10px; background:#112e1f; color:#fff; border:1px solid #00ff66; border-radius:8px; box-sizing:border-box;">
         
+        <label style="font-size:12px; color:#ccc; display:block; margin-bottom:5px;">Trade Amount ($)</label>
+        <input type="number" id="trade_amount" value="10" style="width:100%; margin:0 0 15px 0; padding:10px; background:#112e1f; color:#fff; border:1px solid #00ff66; border-radius:8px; box-sizing:border-box;">
+
         <label style="font-size:12px; color:#ccc; display:block; margin-bottom:8px;">Trade direction</label>
         <button class="dir-btn" data-val="Up" style="width:100%; padding:10px; margin-bottom:8px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Up</button>
         <button class="dir-btn" data-val="Down" style="width:100%; padding:10px; margin-bottom:8px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Down</button>
-        <button class="dir-btn" data-val="Random" style="width:100%; padding:10px; margin-bottom:20px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Random</button>
+        <button class="dir-btn" data-val="Random" style="width:100%; padding:10px; margin-bottom:15px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Random</button>
         
-        <button id="save_bot_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Save</button>
+        <button id="save_bot_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Start Scan & Trade</button>
     `;
     document.body.appendChild(panel);
 
@@ -84,85 +143,64 @@
     dirButtons[0].style.color = "#000";
 
     document.getElementById('qx_login_btn').onclick = function () {
-        let passInput = document.getElementById('qx_pass').value;
-        if (passInput === licenseKey) {
-            loginBox.remove();
-            circleBtn.style.display = 'flex';
-            panel.style.display = 'block';
-        } else {
-            alert("Invalid License Key!");
-        }
+        loginBox.remove();
+        botContainer.style.display = 'flex';
+        panel.style.display = 'block';
     };
 
-    circleBtn.onclick = function () {
+    botContainer.onclick = function () {
         panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
     };
 
     document.getElementById('save_bot_btn').onclick = function () {
         let scanDelay = parseInt(document.getElementById('scan_delay').value) * 1000;
-        let afterScan = parseInt(document.getElementById('after_scan').value);
+        let tradeAmount = document.getElementById('trade_amount').value;
         panel.style.display = 'none';
 
         if (!isRunning) {
             isRunning = true;
-            
-            let statusBox = document.createElement('div');
-            statusBox.id = 'qx999-status';
-            statusBox.style.cssText = `
-                position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-                background: rgba(0, 255, 102, 0.95); color: #000; padding: 8px 18px;
-                border-radius: 20px; font-weight: bold; font-size: 14px; z-index: 999999;
-                box-shadow: 0 0 10px rgba(0,255,102,0.5);
-            `;
-            statusBox.innerText = "QX999: Analyzing Market...";
-            document.body.appendChild(statusBox);
+            startScanAnimation();
 
-            tradeInterval = setInterval(function () {
-                statusBox.innerText = "QX999: Analyzing Market...";
-                
-                setTimeout(() => {
-                    let targetDir = selectedDirection;
-                    if (selectedDirection === "Random") {
-                        targetDir = Math.random() < 0.5 ? "Up" : "Down";
-                    }
+            setTimeout(function () {
+                stopScanAnimation();
 
-                    statusBox.innerText = "QX999 Signal: " + targetDir;
+                let amountInput = document.querySelector('input[name="amount"]') || document.querySelector('.input-amount input');
+                if (amountInput) {
+                    amountInput.value = tradeAmount;
+                    amountInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
 
-                    let callBtn = document.querySelector('.btn-call') || document.querySelector('.up-button') || document.querySelector('button.success') || document.querySelector('.deal-button-call');
-                    let putBtn = document.querySelector('.btn-put') || document.querySelector('.down-button') || document.querySelector('button.danger') || document.querySelector('.deal-button-put');
+                let targetDir = selectedDirection;
+                if (selectedDirection === "Random") {
+                    targetDir = Math.random() < 0.5 ? "Up" : "Down";
+                }
 
-                    if (targetDir === "Up" && callBtn) {
-                        callBtn.click();
-                    } else if (targetDir === "Down" && putBtn) {
-                        putBtn.click();
-                    } else {
-                        let allBtns = document.querySelectorAll('button');
-                        allBtns.forEach(b => {
-                            let text = b.innerText.toLowerCase();
-                            if (targetDir === "Up" && (text.includes('higher') || text.includes('call') || text.includes('up'))) {
-                                b.click();
-                            } else if (targetDir === "Down" && (text.includes('lower') || text.includes('put') || text.includes('down'))) {
-                                b.click();
-                            }
-                        });
-                    }
+                let callBtn = document.querySelector('.btn-call') || document.querySelector('.up-button') || document.querySelector('button.success') || document.querySelector('.deal-button-call');
+                let putBtn = document.querySelector('.btn-put') || document.querySelector('.down-button') || document.querySelector('button.danger') || document.querySelector('.deal-button-put');
 
-                    if (afterScan > 0) {
-                        setTimeout(() => {
-                            if(document.getElementById('qx999-status')) {
-                                document.getElementById('qx999-status').innerText = "QX999: Analyzing Market...";
-                            }
-                        }, afterScan * 1000);
-                    }
-                }, 2000);
-
+                if (targetDir === "Up" && callBtn) {
+                    callBtn.click();
+                } else if (targetDir === "Down" && putBtn) {
+                    putBtn.click();
+                } else {
+                    let allBtns = document.querySelectorAll('button');
+                    allBtns.forEach(b => {
+                        let text = b.innerText.toLowerCase();
+                        if (targetDir === "Up" && (text.includes('higher') || text.includes('call') || text.includes('up'))) {
+                            b.click();
+                        } else if (targetDir === "Down" && (text.includes('lower') || text.includes('put') || text.includes('down'))) {
+                            b.click();
+                        }
+                    });
+                }
+                isRunning = false;
             }, scanDelay);
         }
     };
 
-    circleBtn.ontouchmove = function (e) {
+    botContainer.ontouchmove = function (e) {
         let touch = e.touches[0];
-        circleBtn.style.left = (touch.clientX - 30) + 'px';
-        circleBtn.style.top = (touch.clientY - 30) + 'px';
+        botContainer.style.left = (touch.clientX - 30) + 'px';
+        botContainer.style.top = (touch.clientY - 30) + 'px';
     };
 })();
