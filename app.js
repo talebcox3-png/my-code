@@ -131,7 +131,7 @@
         <button class="dir-btn" data-val="Down" style="width:100%; padding:10px; margin-bottom:8px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Down</button>
         <button class="dir-btn" data-val="Random" style="width:100%; padding:10px; margin-bottom:15px; background:#112e1f; color:#00ff66; border:1px solid #00ff66; border-radius:8px; font-weight:bold; cursor:pointer;">Random</button>
         
-        <button id="save_bot_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Start Scan & Trade</button>
+        <button id="save_bot_btn" style="width:100%; padding:12px; background:#00ff66; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Save Settings</button>
     `;
     document.body.appendChild(panel);
 
@@ -154,17 +154,15 @@
     document.getElementById('qx_login_btn').onclick = function () {
         loginBox.remove();
         botContainer.style.display = 'flex';
-        panel.style.display = 'block';
-    };
-
-    botContainer.onclick = function () {
-        panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
     };
 
     document.getElementById('save_bot_btn').onclick = function () {
+        panel.style.display = 'none';
+    };
+
+    function startTradeExecution() {
         let scanDelay = parseInt(document.getElementById('scan_delay').value) * 1000;
         let tradeAmount = document.getElementById('trade_amount').value;
-        panel.style.display = 'none';
 
         if (!isRunning) {
             isRunning = true;
@@ -210,6 +208,26 @@
                 }
                 isRunning = false;
             }, scanDelay);
+        }
+    }
+
+    // Single Tap and Double Tap Handling Logic
+    let clickTimer = null;
+    let clickCount = 0;
+
+    botContainer.onclick = function (e) {
+        clickCount++;
+        if (clickCount === 1) {
+            clickTimer = setTimeout(function () {
+                clickCount = 0;
+                // Single Tap -> Start Scan & Auto Trade
+                startTradeExecution();
+            }, 300);
+        } else if (clickCount === 2) {
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            // Double Tap -> Toggle Settings Panel
+            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
         }
     };
 
